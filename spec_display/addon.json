@@ -1,0 +1,8 @@
+{
+	"title"		: "TTT Who is watching me?",
+	"type"		: "ServerContent",
+	"tags"		: [ "fun" ],
+	"ignore"	: [
+		"*.psd"
+	]
+}
