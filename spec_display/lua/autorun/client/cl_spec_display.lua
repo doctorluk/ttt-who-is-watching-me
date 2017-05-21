@@ -11,9 +11,9 @@ if CLIENT then
 	
 	-- Receival of the server's spectator count
 	net.Receive( "spec_display", function( net_response )
-		amount = net.ReadInt( 8 )
-		showAmount = net.ReadBool( )
-		showEye = net.ReadBool( )
+		amount 		= net.ReadInt( 8 )
+		showAmount 	= net.ReadBool( )
+		showEye 	= net.ReadBool( )
 	end)
 	
 	-- Eye-Icon on the side
@@ -33,11 +33,14 @@ if CLIENT then
 		if showAmount and amount > 0 then
 			surface.SetFont( "Trebuchet24" )
 			surface.SetTextColor( 255, 255, 255, 255 )
+			
+			-- Move the text slightly to the left for double digit numbers
 			if amount < 10 then
 				surface.SetTextPos( 14, ScrH()/2-12 )
 			else
 				surface.SetTextPos( 6, ScrH()/2-12 )
 			end
+			
 			surface.DrawText( amount )
 		end
 	end )

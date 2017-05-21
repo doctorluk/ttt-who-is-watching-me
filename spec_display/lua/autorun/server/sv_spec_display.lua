@@ -7,6 +7,7 @@ if SERVER then
 	
 	util.AddNetworkString( "spec_display" )
 	
+	-- Types of a player's condition
 	local GROUP_ALIVE = 1
 	local GROUP_NOTFOUND = 2
 	local GROUP_FOUND = 3
@@ -14,11 +15,13 @@ if SERVER then
 	
 	local showInnos = false
 	
-	local function checkSpectators( )
+	local function checkSpectators()
+		-- Reset counts at start
 		for _, ply in ipairs( player.GetHumans() ) do
 			ply.viewercount = 0
 		end
 		
+		-- Count players watching someone
 		for _, ply in ipairs( player.GetHumans() ) do
 			if ply:IsSpec() or not ply:Alive() then
 				local target = ply:GetObserverTarget()
@@ -29,20 +32,21 @@ if SERVER then
 			end
 		end
 		
+		-- Check if we have identified bodies or spectators
 		showInnos = spec_canInnosSee()
 		
 		for _, ply in ipairs( player.GetHumans() ) do
 			net.Start( "spec_display" )
-			net.WriteInt( ply.viewercount, 8 )
-			net.WriteBool( ply:IsTraitor() )
-			net.WriteBool( showInnos )
+			net.WriteInt( ply.viewercount, 8 ) -- amount
+			net.WriteBool( ply:IsTraitor() ) -- showAmount
+			net.WriteBool( ply:IsTraitor() or showInnos ) -- showIcon
 			net.Send( ply )
 		end
 	end
 	timer.Create( "spectate_monitor", 1, 0, checkSpectators )
 	
 	-- Check if innocents can see spectator eyes
-	function spec_canInnosSee( )
+	function spec_canInnosSee()
 		
 		for _, ply in ipairs( player.GetHumans() ) do
 			if getScoreGroup(ply) == GROUP_SPEC then
@@ -58,7 +62,7 @@ if SERVER then
 	end
 	
 	function getScoreGroup(p)
-	   if not IsValid(p) then return -1 end -- will not match any group panel
+	   if not IsValid(p) then return -1 end
 
 		if DetectiveMode() then
 			if p:IsSpec() and (not p:Alive()) then
