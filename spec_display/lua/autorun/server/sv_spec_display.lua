@@ -8,14 +8,49 @@ if SERVER then
 	util.AddNetworkString( "spec_display" )
 	
 	-- Types of a player's condition
-	local GROUP_ALIVE = 1
-	local GROUP_NOTFOUND = 2
-	local GROUP_FOUND = 3
-	local GROUP_SPEC = 4
+	local SPEC_ALIVE = 1
+	local SPEC_NOTFOUND = 2
+	local SPEC_FOUND = 3
+	local SPEC_INSPEC = 4
 	
 	local showInnos = false
 	
-	local function checkSpectators()
+	local function spec_getPlayerState(p)
+	   if not IsValid(p) then return -1 end
+
+		if DetectiveMode() then
+			if p:IsSpec() and (not p:Alive()) then
+				if p:GetNWBool("body_found", false) then
+					return SPEC_FOUND
+				else
+					return SPEC_NOTFOUND
+				end
+			elseif p:Alive() and p:IsActive() then
+				return SPEC_ALIVE
+			end
+	   end
+
+	   return SPEC_INSPEC
+	   
+	end
+	
+	-- Check if innocents can see spectator eyes
+	local function spec_canInnosSee()
+		
+		for _, ply in ipairs( player.GetHumans() ) do
+			if spec_getPlayerState(ply) == SPEC_INSPEC then
+				return true
+			end
+			if spec_getPlayerState(ply) == SPEC_FOUND  then
+				return true
+			end
+		end
+		
+		return false
+		
+	end
+	
+	local function spec_checkSpectators()
 		-- Reset counts at start
 		for _, ply in ipairs( player.GetHumans() ) do
 			ply.viewercount = 0
@@ -25,7 +60,7 @@ if SERVER then
 		for _, ply in ipairs( player.GetHumans() ) do
 			if ply:IsSpec() or not ply:Alive() then
 				local target = ply:GetObserverTarget()
-				if target and ( ply:GetObserverMode() == OBS_MODE_IN_EYE or ply:GetObserverMode() == OBS_MODE_CHASE ) then
+				if target and target:Alive() and target:IsActive() and ( ply:GetObserverMode() == OBS_MODE_IN_EYE or ply:GetObserverMode() == OBS_MODE_CHASE ) then
 					if not target.viewercount then target.viewercount = 0 end
 					target.viewercount = target.viewercount + 1
 				end
@@ -35,50 +70,30 @@ if SERVER then
 		-- Check if we have identified bodies or spectators
 		showInnos = spec_canInnosSee()
 		
+		-- Send players the info about their spectators
 		for _, ply in ipairs( player.GetHumans() ) do
+		
+			local amount, showAmount, showIcon
+		
+			if ply:IsTraitor() then
+				amount = ply.viewercount
+				showAmount = true
+				showIcon = ply.viewercount > 0
+			else
+				amount = 0
+				showAmount = false
+				showIcon = ply.viewercount > 0 and showInnos
+			end
+			
 			net.Start( "spec_display" )
-			net.WriteInt( ply.viewercount, 8 ) -- amount
-			net.WriteBool( ply:IsTraitor() ) -- showAmount
-			net.WriteBool( ply:IsTraitor() or showInnos ) -- showIcon
+			net.WriteInt( amount, 8 ) -- amount
+			net.WriteBool( showAmount ) -- showAmount
+			net.WriteBool( showIcon ) -- showIcon
 			net.Send( ply )
+			
 		end
 	end
-	timer.Create( "spectate_monitor", 1, 0, checkSpectators )
-	
-	-- Check if innocents can see spectator eyes
-	function spec_canInnosSee()
-		
-		for _, ply in ipairs( player.GetHumans() ) do
-			if getScoreGroup(ply) == GROUP_SPEC then
-				return true
-			end
-			if getScoreGroup(ply) == GROUP_FOUND  then
-				return true
-			end
-		end
-		
-		return false
-		
-	end
-	
-	function getScoreGroup(p)
-	   if not IsValid(p) then return -1 end
-
-		if DetectiveMode() then
-			if p:IsSpec() and (not p:Alive()) then
-				if p:GetNWBool("body_found", false) then
-					return GROUP_FOUND
-				else
-					return GROUP_NOTFOUND
-				end
-			elseif p:Alive() and p:IsActive() then
-				return GROUP_ALIVE
-			end
-	   end
-
-	   return GROUP_SPEC
-	   
-	end
+	timer.Create( "spectate_monitor", 1, 0, spec_checkSpectators )
 	
 end
 

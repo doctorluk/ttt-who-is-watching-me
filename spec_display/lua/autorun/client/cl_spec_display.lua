@@ -12,8 +12,8 @@ if CLIENT then
 	-- Receival of the server's spectator count
 	net.Receive( "spec_display", function( net_response )
 		amount 		= net.ReadInt( 8 )
-		showAmount 	= net.ReadBool( )
-		showEye 	= net.ReadBool( )
+		showAmount 	= net.ReadBool()
+		showEye 	= net.ReadBool()
 	end)
 	
 	-- Eye-Icon on the side
@@ -21,10 +21,10 @@ if CLIENT then
 
 	-- Drawing of the eye
 	hook.Add( "HUDPaint", "spectator_eye_image", function()
-		if amount > 0 and showEye then
+		if showEye then
 			surface.SetDrawColor( 255, 255, 255, 255 )
 			surface.SetMaterial( spec_eye )
-			surface.DrawTexturedRect( 32, ScrH()/2-32, 64, 64 )
+			surface.DrawTexturedRect( 32, ScrH() / 2 - 32, 64, 64 )
 		end
 	end )
 	
@@ -36,9 +36,9 @@ if CLIENT then
 			
 			-- Move the text slightly to the left for double digit numbers
 			if amount < 10 then
-				surface.SetTextPos( 14, ScrH()/2-12 )
+				surface.SetTextPos( 14, ScrH() / 2 - 12 )
 			else
-				surface.SetTextPos( 6, ScrH()/2-12 )
+				surface.SetTextPos( 6, ScrH() / 2 - 12 )
 			end
 			
 			surface.DrawText( amount )
