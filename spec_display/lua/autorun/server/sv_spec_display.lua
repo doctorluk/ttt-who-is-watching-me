@@ -6,6 +6,7 @@ if SERVER then
 	resource.AddFile( "materials/hud/spectator_eye.png" )
 	
 	util.AddNetworkString( "spec_display" )
+	util.AddNetworkString( "spec_display_config" )
 	
 	-- Types of a player's condition
 	local SPEC_ALIVE = 1
@@ -60,7 +61,7 @@ if SERVER then
 		for _, ply in ipairs( player.GetHumans() ) do
 			if ply:IsSpec() or not ply:Alive() then
 				local target = ply:GetObserverTarget()
-				if target and target:Alive() and target:IsActive() and ( ply:GetObserverMode() == OBS_MODE_IN_EYE or ply:GetObserverMode() == OBS_MODE_CHASE ) then
+				if target and ( ply:GetObserverMode() == OBS_MODE_IN_EYE or ply:GetObserverMode() == OBS_MODE_CHASE ) then
 					if not target.viewercount then target.viewercount = 0 end
 					target.viewercount = target.viewercount + 1
 				end
@@ -94,6 +95,18 @@ if SERVER then
 		end
 	end
 	timer.Create( "spectate_monitor", 1, 0, spec_checkSpectators )
+	
+	-- That way you are overriding the default hook
+	-- you can use hook.Add to make more functions get called when this event occurs
+	local function sendSpecConfig( ply )
+		net.Start( "spec_display_config" )
+		net.WriteInt( GetConVar("spec_eye_size"):GetInt(), 32 )
+		net.WriteInt( GetConVar("spec_eye_y_align_center"):GetInt(), 1 )
+		net.WriteInt( GetConVar("spec_eye_x_offset"):GetInt(), 32 )
+		net.WriteInt( GetConVar("spec_eye_y_offset"):GetInt(), 32 )
+		net.Send( ply )
+	end
+	hook.Add( "PlayerInitialSpawn", "spectate_monitor_config", sendSpecConfig )
 	
 end
 
