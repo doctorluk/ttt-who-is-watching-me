@@ -96,12 +96,10 @@ if SERVER then
 	end
 	timer.Create( "spectate_monitor", 1, 0, spec_checkSpectators )
 	
-	-- That way you are overriding the default hook
-	-- you can use hook.Add to make more functions get called when this event occurs
+	-- Sending server config upon connection
 	local function sendSpecConfig( ply )
 		net.Start( "spec_display_config" )
-		net.WriteInt( GetConVar("spec_eye_size"):GetInt(), 32 )
-		net.WriteInt( GetConVar("spec_eye_y_align_center"):GetInt(), 1 )
+		net.WriteInt( GetConVar("spec_eye_y_align_center"):GetInt(), 2 )
 		net.WriteInt( GetConVar("spec_eye_x_offset"):GetInt(), 32 )
 		net.WriteInt( GetConVar("spec_eye_y_offset"):GetInt(), 32 )
 		net.Send( ply )

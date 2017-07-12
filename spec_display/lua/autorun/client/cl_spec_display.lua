@@ -12,11 +12,12 @@ if CLIENT then
 	local spec_eye_y_align_center = 1
 	local spec_eye_x_offset = 0
 	local spec_eye_y_offset = 0
+	local spec_eye_x = 0
+	local spec_eye_y = 0
 	
 	-- Receival of the server's spectator count
 	net.Receive( "spec_display_config", function( net_response )
-		spec_eye_size 			= net.ReadInt( 32 )
-		spec_eye_y_align_center	= net.ReadInt( 1 )
+		spec_eye_y_align_center	= net.ReadInt( 2 )
 		spec_eye_x_offset		= net.ReadInt( 32 )
 		spec_eye_y_offset		= net.ReadInt( 32 )
 	end)
@@ -36,7 +37,9 @@ if CLIENT then
 		if showEye then
 			surface.SetDrawColor( 255, 255, 255, 255 )
 			surface.SetMaterial( spec_eye )
-			surface.DrawTexturedRect( 32 + spec_eye_x_offset, (ScrH() / 2 - ( spec_eye_size / 2 ) * spec_eye_y_align_center) + spec_eye_y_offset, spec_eye_size, spec_eye_size )
+			spec_eye_x = 32 + spec_eye_x_offset
+			spec_eye_y = ((ScrH() / 2 * spec_eye_y_align_center) - ( spec_eye_size / 2 )) + spec_eye_y_offset
+			surface.DrawTexturedRect( spec_eye_x, spec_eye_y, spec_eye_size, spec_eye_size )
 			
 		end
 	end )
@@ -49,9 +52,9 @@ if CLIENT then
 			
 			-- Move the text slightly to the left for double digit numbers
 			if amount < 10 then
-				surface.SetTextPos( 14 + spec_eye_x_offset, ((ScrH() / 2 - 12) * spec_eye_y_align_center) + spec_eye_y_offset )
+				surface.SetTextPos( spec_eye_x - 18, spec_eye_y + 16 )
 			else
-				surface.SetTextPos( 6 + spec_eye_x_offset, ((ScrH() / 2 - 12) * spec_eye_y_align_center) + spec_eye_y_offset )
+				surface.SetTextPos( spec_eye_x - 26, spec_eye_y + 16 )
 			end
 			
 			surface.DrawText( amount )
